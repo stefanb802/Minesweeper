@@ -7,6 +7,12 @@
 #include <string>
 using namespace std;
 
+//Predefined constants for the boards
+const char MINE = 'M';
+const char UNREVEALED = 'X';
+const char FLAG = 'F';
+const char REVEALEDZERO = '*';
+
 //Assigned based on the difficulty
 int boardSize;
 int mines;
@@ -17,7 +23,7 @@ int mines;
 vector<vector<char>> generateBoard() {
     vector<vector<char>> board(boardSize);
     for (int i = 0; i < boardSize; i++)
-        board[i] = vector<char>(boardSize, 'X'); //X=unrevealed cell
+        board[i] = vector<char>(boardSize, UNREVEALED); 
     return board;
 }
 
@@ -27,7 +33,7 @@ void putMines(vector<vector<char>>& board) {
         int pos = rand() % (boardSize * boardSize);
         int m = pos / boardSize;
         int n = pos % boardSize;
-        board[m][n] = 'M';
+        board[m][n] = MINE;
     }
 }
 
@@ -37,7 +43,7 @@ void checkProximity(vector<vector<char>>& board, int i, int j) {
     int cntr = 0;
     for (int m = max(0, i - 1); m <= min(i + 1, boardSize - 1); m++)
         for (int n = max(0, j - 1); n <= min(j + 1, boardSize - 1); n++)
-            if (board[m][n] == 'M')
+            if (board[m][n] == MINE)
                 cntr++;
     board[i][j] = (char)(cntr + '0');
     return;
@@ -46,7 +52,7 @@ void checkProximity(vector<vector<char>>& board, int i, int j) {
 void completeBoard(vector<vector<char>>& board) {
     for (int i = 0; i < boardSize; i++)
         for (int j = 0; j < boardSize; j++)
-            if(board[i][j]!='M')
+            if(board[i][j]!=MINE)
                 checkProximity(board, i, j);
 }
 
@@ -90,7 +96,7 @@ void printBoard(vector<vector<char>> board) {
 void printFinalBoard(vector<vector<char>> board, vector<vector<char>> userBoard) {
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0; j < boardSize; j++)
-            if (board[i][j] == 'M')
+            if (board[i][j] == MINE)
                 cout << board[i][j];
             else
                 cout << userBoard[i][j];
@@ -104,9 +110,9 @@ void clearProximity(vector<vector<char>> board, vector<vector<char>>& userBoard,
         return;
     for (int m = max(0, i - 1); m <= min(boardSize - 1, i + 1); m++)
         for (int n = max(0, j - 1); n <= min(boardSize - 1, j + 1); n++) {
-            if (userBoard[m][n] == 'X' || userBoard[m][n] == 'F') {
+            if (userBoard[m][n] == UNREVEALED || userBoard[m][n] == FLAG) {
                 if (board[m][n] == '0')
-                    userBoard[m][n] = '*'; //*=revealed cell with 0 mines in its proximity
+                    userBoard[m][n] = REVEALEDZERO;
                 else
                     userBoard[m][n] = board[m][n];
                 clearProximity(board, userBoard, m, n);
@@ -119,7 +125,7 @@ void clearProximity(vector<vector<char>> board, vector<vector<char>>& userBoard,
 bool gameWon(vector<vector<char>> board, vector<vector<char>> userBoard) {
     for (int i = 0; i < boardSize; i++)
         for (int j = 0; j < boardSize; j++)
-            if ((board[i][j] == '0' && userBoard[i][j] != '*') || (board[i][j] >= '1' && board[i][j] < 'M' && board[i][j] != userBoard[i][j]))
+            if ((board[i][j] == '0' && userBoard[i][j] != REVEALEDZERO) || (board[i][j] >= '1' && board[i][j] < MINE && board[i][j] != userBoard[i][j]))
                 return false;
     return true;
 }
@@ -129,8 +135,8 @@ bool gameWon(vector<vector<char>> board, vector<vector<char>> userBoard) {
 void putFlag(vector<vector<char>>& userBoard, int i, int j) {
     if (i < 0 || j<0 || i >= boardSize || j>boardSize)
         return;
-    if (userBoard[i][j] == 'X')
-        userBoard[i][j] = 'F';
+    if (userBoard[i][j] == UNREVEALED)
+        userBoard[i][j] = FLAG;
     return;
 }
 
@@ -138,8 +144,8 @@ void putFlag(vector<vector<char>>& userBoard, int i, int j) {
 void removeFlag(vector<vector<char>>& userBoard, int i, int j) {
     if (i < 0 || j<0 || i >= boardSize || j>boardSize)
         return;
-    if (userBoard[i][j] == 'F')
-        userBoard[i][j] = 'X';
+    if (userBoard[i][j] == FLAG)
+        userBoard[i][j] = UNREVEALED;
     return;
 }
 
@@ -169,7 +175,7 @@ void flagHandler(vector<vector<char>>& userBoard, string put_Flag, string remove
 
 //Checks if the game is lost(user selects a mine). Otherwise, it reveals the number(s).
 bool checkBoard(vector<vector<char>> board, vector<vector<char>>& userBoard, int i, int j) {
-    if (board[i][j] == 'M') {
+    if (board[i][j] == MINE) {
         cout << "Game over! You lost!" << endl;
         return false;
     }
@@ -177,7 +183,7 @@ bool checkBoard(vector<vector<char>> board, vector<vector<char>>& userBoard, int
         userBoard[i][j] = board[i][j];
     }
     else {
-        userBoard[i][j] = '*';
+        userBoard[i][j] = REVEALEDZERO;
         clearProximity(board, userBoard, i, j);
     }
     if (gameWon(board, userBoard)) {
