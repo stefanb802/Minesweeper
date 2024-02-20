@@ -3,7 +3,6 @@
 #include "UserInterface.h"
 
 extern const char MINE;
-extern const char REVEALED;
 extern const char FLAG;
 extern const char REVEALEDZERO;
 extern const char UNREVEALED;
